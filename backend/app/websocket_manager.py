@@ -2,8 +2,6 @@ from typing import Dict, Set
 from fastapi import WebSocket
 import json
 
-from .models.player import Role
-
 
 class ConnectionManager:
     """Manages WebSocket connections for game rooms."""
@@ -66,7 +64,12 @@ class ConnectionManager:
 
             _, player_id = self.connection_info[connection]
             player = game.players.get(player_id)
-            is_spymaster = player is not None and player.role == Role.SPYMASTER
+            # Check if player is a spymaster (Role is str enum, so compare to string)
+            is_spymaster = False
+            if player is not None and player.role is not None:
+                # Handle both enum and string cases
+                role_value = player.role.value if hasattr(player.role, 'value') else str(player.role)
+                is_spymaster = role_value == "spymaster"
 
             # Build fresh state dict for each player to avoid any shared references
             player_state = {
