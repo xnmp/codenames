@@ -64,10 +64,15 @@ class ConnectionManager:
 
             _, player_id = self.connection_info[connection]
             player = game.players.get(player_id)
-            # Check if player is a spymaster (Role is str enum, so compare to string)
+
+            # Skip stale connections where player doesn't exist in game
+            # This prevents stale websockets from receiving wrong game state
+            if player is None:
+                continue
+
+            # Check if player is a spymaster
             is_spymaster = False
-            if player is not None and player.role is not None:
-                # Handle both enum and string cases
+            if player.role is not None:
                 role_value = player.role.value if hasattr(player.role, 'value') else str(player.role)
                 is_spymaster = role_value == "spymaster"
 
